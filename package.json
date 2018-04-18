@@ -1,0 +1,27 @@
+{
+	"name": "shrpc",
+	"version": "0.1.0",
+	"description": "An alternative http-based jsonrpc interface which simplified the noisy usages",
+	"main": "shrpc.js",
+	"engines": {
+		"node": ">=8"
+	},
+	"scripts": {
+		"test": "node test.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/JCloudYu/shrpc.git"
+	},
+	"keywords": [
+		"RPC",
+		"JSONROC",
+		"SHRPC"
+	],
+	"author": "JCloudYu",
+	"license": "WTFPL",
+	"bugs": {
+		"url": "https://github.com/JCloudYu/shrpc/issues"
+	},
+	"homepage": "https://github.com/JCloudYu/shrpc#readme"
+}
