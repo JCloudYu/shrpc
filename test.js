@@ -29,14 +29,22 @@
 			);
 		},
 		error2:(args, ctrl)=>{
-			throw ctrl.helper.GenUserError(
+			return Promise.reject(ctrl.helper.GenUserError(
 				400012,
 				"This is meant to be failed!",
 				{_:"error2"}
-			);
+			));
 		},
 		error3:(args, ctrl)=>{
 			JSON.parse('//');
+		},
+		error4:(args, ctrl)=>{
+			throw ctrl.helper.GenUserError(
+				401000,
+				"You're not authorized!",
+				{"_!!":"Invalid authorization info!"},
+				401
+			);
 		}
 	}).listen( 8880, 'localhost' );
 })();
