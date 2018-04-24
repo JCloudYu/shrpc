@@ -69,7 +69,7 @@
 			Promise.resolve()
 			// Parse and fetch method identifier
 			.then(()=>{
-				let [ , ns, cls, method ] = path.match(REQ_CHECK);
+				let [ , ns='', cls='', method='' ] = (path.match(REQ_CHECK) || []);
 				return __FETCH_HANDLER( _handlers, ns, cls, method );
 			})
 			// Parse post content according to request's http method and content-type

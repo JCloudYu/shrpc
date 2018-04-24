@@ -21,6 +21,11 @@
 		method:(args, ctrl)=>{
 			return "OOPS CLASS2!";
 		},
+		redir:(args, ctrl)=>{
+			let {request:req, response:res} = ctrl;
+			res.writeHead( 307, { "Location":`http://${req.headers[ 'host' ]}/ns/class2/method` });
+			res.end();
+		},
 		error1:(args, ctrl)=>{
 			throw ctrl.helper.GenUserError(
 				400012,
