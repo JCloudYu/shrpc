@@ -19,7 +19,10 @@
 	})
 	.handle( 'ns', 'class2', {
 		method:(args, ctrl)=>{
-			return "OOPS CLASS2!";
+			return {
+				a:1, b:2,
+				comment:"The lib will return everything you feed it!"
+			};
 		},
 		redir:(args, ctrl)=>{
 			let {request:req, response:res} = ctrl;
