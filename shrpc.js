@@ -173,7 +173,9 @@
 					}
 					if ( err.detail ) rBody.detail = err.detail;
 					
-					res.writeHead( 400, rHeader);
+					let errCode = (err.status_code|0) % 1000;
+					errCode = ( errCode <= 600 && errCode <= 399 ) ? 400 : errCode;
+					res.writeHead( errCode, rHeader);
 					res.write(JSON.stringify(rBody));
 					res.end();
 				});
@@ -193,7 +195,7 @@
 						rHeader[ 'X-Request-Id' ] = rBody._id = _id;
 					}
 					
-					res.writeHead(400, rHeader);
+					res.writeHead(500, rHeader);
 					res.write(JSON.stringify(rBody));
 					res.end();
 				}
@@ -208,8 +210,8 @@
 	Object.defineProperties(HELPER, {
 		GenUserError: {
 			configurable:false, writable:false, enumerable:true,
-			value:(code, msg, detailInfo=undefined)=>{
-				return {error:code, msg, detail:detailInfo, user_error:true};
+			value:(code, msg, detailInfo=null, status_code=400)=>{
+				return {error:code, msg, detail:detailInfo, user_error:true, status_code};
 			}
 		}
 	});
