@@ -24,7 +24,7 @@
 				value:function(ns=null, cls=null, definitions={}) {
 					let defVerified = false;
 				
-					if ( arguments.length === 2 && Object(cls) === cls ) {
+					if ( arguments.length === 2 && __IS_OBJ(cls) ) {
 						definitions = cls;
 						cls = definitions._class||'_';
 						defVerified = true;
@@ -36,7 +36,7 @@
 					
 					_handlers[ns] = _handlers[ns] || {};
 					
-					if ( defVerified || (Object(definitions) === definitions) ) {
+					if ( defVerified || __IS_OBJ(definitions) ) {
 						_handlers[ns][cls] = definitions;
 					}
 					else {
@@ -115,7 +115,7 @@
 				}
 			
 				// Check if the args var is an object
-				if ( Object(args) !== args ) {
+				if ( !__IS_OBJ(args) ) {
 					if ( res.finished ) return;
 					let rBody = {
 						error:400001,
@@ -132,6 +132,61 @@
 					return;
 				}
 				
+				// Check if the developer wants to verify the input arguments
+				// handler.verify must be an instance of Object
+				if (handler.verify && __IS_OBJ(handler.verify) ) {
+					let verify = handler.verify;
+					let __errCollect = [];
+					for(let argName in verify) {
+						if ( !verify.hasOwnProperty(argName) ) continue;
+						let passed, arg=verify[argName];
+						
+						
+						if (Array.isArray(arg)) {
+							passed = arg.indexOf(args[argName]);
+							if ( passed < 0 ) {
+								__errCollect.push( `Argument \`${argName}\` is invalid!` )
+							}
+							continue;
+						}
+						
+						// func means that the arg require custom checking
+						if (__IS_FUNC(arg)) {
+							passed = arg(args[argName]);
+							if ( !passed ) {
+								__errCollect.push( `Argument \`${argName}\` is invalid!` );
+							}
+							continue;
+						}
+						
+						// true means the arg is required but the content is not checked
+						if (arg === true) {
+							passed = args.hasOwnProperty(argName);
+							if ( !passed ) {
+								__errCollect.push( `Argument \`${argName}\` is required!` );
+							}
+							continue;
+						}
+					}
+					
+					if ( __errCollect.length > 0 ) {
+						if ( res.finished ) return;
+						let rBody = {
+							error:400002,
+							msg: "The provided arguments are insufficient or invalid to invoke the procedure!",
+							detail: __errCollect
+						};
+						let rHeader = { 'Content-Type': 'application/json' };
+						if ( _id ) {
+							rHeader[ 'X-Request-Id' ] = rBody._id = _id;
+						}
+						
+						res.writeHead(400, rHeader);
+						res.write(JSON.stringify(rBody));
+						res.end();
+						return;
+					}
+				}
 				
 				
 				// Invoke the procedure
@@ -145,7 +200,11 @@
 				}
 				
 				return Promise.resolve().then(()=>{
-					return handler(args, _env_ctrl);
+					let invokeArgs = [args, _env_ctrl];
+					if ( _id ) {
+						invokeArgs.push(_id);
+					}
+					return handler(...invokeArgs);
 				})
 				.then((ret)=>{
 					if ( res.finished ) return;
@@ -264,4 +323,6 @@
 		result = result[method];
 		return (typeof result === "function") ? result : undefined;
 	}
+	function __IS_OBJ( verify ) { return Object(verify) === verify; }
+	function __IS_FUNC( verify ) { return (typeof verify === "function"); }
 })();
