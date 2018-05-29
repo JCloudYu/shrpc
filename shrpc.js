@@ -193,6 +193,7 @@
 				let _env_ctrl = {};
 				{
 					Object.defineProperties(_env_ctrl, {
+						_id:{configurable:false, writable:false, enumerable:true, value:_id||null},
 						request:{configurable:false, writable:false, enumerable:true, value:req},
 						response:{configurable:false, writable:false, enumerable:true, value:res},
 						helper:{configurable:false, writable:false, enumerable:true, value:HELPER}
@@ -200,11 +201,7 @@
 				}
 				
 				return Promise.resolve().then(()=>{
-					let invokeArgs = [args, _env_ctrl];
-					if ( _id ) {
-						invokeArgs.push(_id);
-					}
-					return handler(...invokeArgs);
+					return handler(args, _env_ctrl);
 				})
 				.then((ret)=>{
 					if ( res.finished ) return;

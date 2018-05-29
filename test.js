@@ -13,41 +13,42 @@
 	
 	serverInst
 	.handle( 'ns', {
-		method:(args, ctrl, _id)=>{
+		method:(args, ctrl)=>{
 			return "OOPS CLASS1!";
 		},
 		_class: 'class1'
 	})
 	.handle( 'ns', 'class2', {
-		method:(args, ctrl, _id)=>{
+		method:(args, ctrl)=>{
 			return {
+				_id:ctrl._id,
 				a:1, b:2,
 				comment:"The lib will return everything you feed it!"
 			};
 		},
-		redir:(args, ctrl, _id)=>{
+		redir:(args, ctrl)=>{
 			let {request:req, response:res} = ctrl;
 			res.writeHead( 307, { "Location":`http://${req.headers[ 'host' ]}/ns/class2/method` });
 			res.end();
 		},
-		error1:(args, ctrl, _id)=>{
+		error1:(args, ctrl)=>{
 			throw ctrl.helper.GenUserError(
 				400012,
 				"This is meant to be failed!",
 				{_:"error1"}
 			);
 		},
-		error2:(args, ctrl, _id)=>{
+		error2:(args, ctrl)=>{
 			return Promise.reject(ctrl.helper.GenUserError(
 				400012,
 				"This is meant to be failed!",
 				{_:"error2"}
 			));
 		},
-		error3:(args, ctrl, _id)=>{
+		error3:(args, ctrl)=>{
 			JSON.parse('//');
 		},
-		error4:(args, ctrl, _id)=>{
+		error4:(args, ctrl)=>{
 			throw ctrl.helper.GenUserError(
 				401000,
 				"You're not authorized!",
@@ -57,10 +58,10 @@
 		}
 	})
 	.handle( 'ns', 'class3', specialClass={
-		argChkCall(args, ctrl, _id){
+		argChkCall(args, ctrl){
 			return args;
 		},
-		passCall(args, ctrl, _id){
+		passCall(args, ctrl){
 			return "YOU'RE PASSED!";
 		}
 	})
