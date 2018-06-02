@@ -52,7 +52,7 @@
 					return _server.listen(...args);
 				}
 			},
-			inst:{
+			http:{
 				configurable:false, enumerable:true, get:()=>{
 					return _server;
 				}
@@ -132,6 +132,20 @@
 					return;
 				}
 				
+				
+				
+				// Invoke the procedure
+				let _env_ctrl = {};
+				{
+					Object.defineProperties(_env_ctrl, {
+						_id:{configurable:false, writable:false, enumerable:true, value:_id||null},
+						request:{configurable:false, writable:false, enumerable:true, value:req},
+						response:{configurable:false, writable:false, enumerable:true, value:res},
+						helper:{configurable:false, writable:false, enumerable:true, value:HELPER}
+					});
+				}
+				
+				
 				// Check if the developer wants to verify the input arguments
 				// handler.verify must be an instance of Object
 				if (handler.verify && __IS_OBJ(handler.verify) ) {
@@ -189,16 +203,6 @@
 				}
 				
 				
-				// Invoke the procedure
-				let _env_ctrl = {};
-				{
-					Object.defineProperties(_env_ctrl, {
-						_id:{configurable:false, writable:false, enumerable:true, value:_id||null},
-						request:{configurable:false, writable:false, enumerable:true, value:req},
-						response:{configurable:false, writable:false, enumerable:true, value:res},
-						helper:{configurable:false, writable:false, enumerable:true, value:HELPER}
-					});
-				}
 				
 				return Promise.resolve().then(()=>{
 					return handler(args, _env_ctrl);
