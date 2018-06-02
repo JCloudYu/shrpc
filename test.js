@@ -63,6 +63,9 @@
 		},
 		passCall(args, ctrl){
 			return "YOU'RE PASSED!";
+		},
+		authCheck(args, ctrl) {
+			return args;
 		}
 	})
 	.listen( 8880, 'localhost' );
@@ -84,5 +87,26 @@
 			
 			return true;
 		}
-	}
+	};
+	specialClass.authCheck.auth = (args, ctrl)=>{
+		let {request:req} = ctrl;
+		let [type, token] = ('' + req.headers[ 'authorization' ]).split( ' ' );
+		if ( type !== "bearer" ) {
+			return 401;
+		}
+		
+		if ( token === "9876543210" ) {
+			return 403;
+		}
+		
+		
+		if ( token === "3.14159265358979323846" ) {
+			return true;
+		}
+		
+		return {
+			authorized:false,
+			content: "Your authorization header must be bearer 3.14159265358979323846"
+		};
+	};
 })();

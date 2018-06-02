@@ -146,6 +146,57 @@
 				}
 				
 				
+				// Check if the api needs to perform auth checking
+				// handler.auth must be a function
+				if ( __IS_FUNC(handler.auth) ) {
+					let _rStatus = false, _result = handler.auth(args, _env_ctrl);
+					if ( !_result || _result === 401 ) {
+						_rStatus = 401;
+						_result = null;
+					}
+					else
+					if ( _result === 403 ) {
+						_rStatus = 403;
+						_result = null;
+					}
+					else
+					if ( __IS_OBJ(_result) ) {
+						_rStatus = ( !_result.authorized ) ? 401 : 403;
+						delete _result.authorized;
+					}
+					
+					
+					
+					if ( _rStatus !== false ) {
+						if ( res.finished ) return;
+						
+						let _rBody = {};
+						if ( _rStatus === 401 ) {
+							_rBody.error = 401001;
+							_rBody.msg = "Authorization is required to access this api!";
+						}
+						else {
+							_rBody.error = 403001;
+							_rBody.msg = "You're not authorized to access this api!";
+						}
+						
+						if ( _result ) {
+							_rBody.detail = _result;
+						}
+						
+						
+						let _rHeader = { 'Content-Type': 'application/json' };
+						if ( _id ) {
+							_rHeader[ 'X-Request-Id' ] = _rBody._id = _id;
+						}
+						
+						res.writeHead(_rStatus, _rHeader);
+						res.write(JSON.stringify(_rBody));
+						res.end();
+						return;
+					}
+				}
+				
 				// Check if the developer wants to verify the input arguments
 				// handler.verify must be an instance of Object
 				if (handler.verify && __IS_OBJ(handler.verify) ) {
