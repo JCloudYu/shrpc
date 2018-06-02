@@ -96,6 +96,7 @@
 			.then((preprocess)=>{
 				let {args, handler} = preprocess;
 				
+				// region [ Trap if no handler is available ]
 				// Parse and fetch method identifier
 				if ( !handler ) {
 					if ( res.finished ) return;
@@ -113,8 +114,11 @@
 					res.end();
 					return;
 				}
+				// endregion
 			
+				// region [ Trap if input arg is not an object ]
 				// Check if the args var is an object
+				// Note that this check will be trapped only if the mime is application/json
 				if ( !__IS_OBJ(args) ) {
 					if ( res.finished ) return;
 					let rBody = {
@@ -131,6 +135,7 @@
 					res.end();
 					return;
 				}
+				// endregion
 				
 				
 				
@@ -146,6 +151,7 @@
 				}
 				
 				
+				// region [ process handler.auth ]
 				// Check if the api needs to perform auth checking
 				// handler.auth must be a function
 				if ( __IS_FUNC(handler.auth) ) {
@@ -196,10 +202,12 @@
 						return;
 					}
 				}
+				// endregion
 				
+				// region [ process handler.verify ]
 				// Check if the developer wants to verify the input arguments
 				// handler.verify must be an instance of Object
-				if (handler.verify && __IS_OBJ(handler.verify) ) {
+				if ( handler.verify && __IS_OBJ(handler.verify) ) {
 					let verify = handler.verify;
 					let __errCollect = [];
 					for(let argName in verify) {
@@ -252,6 +260,7 @@
 						return;
 					}
 				}
+				// endregion
 				
 				
 				
