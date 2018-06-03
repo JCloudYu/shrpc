@@ -76,6 +76,9 @@
 		},
 		authCheck(args, ctrl) {
 			return args;
+		},
+		authCheckDelay(args, ctrl) {
+			return args;
 		}
 	})
 	.listen( 8880, 'localhost' );
@@ -98,7 +101,10 @@
 			return true;
 		}
 	};
-	specialClass.authCheck.auth = (args, ctrl)=>{
+	specialClass.authCheck.auth = SyncedAuthCheck;
+	specialClass.authCheckDelay.auth = DelayedAuthCheck;
+	
+	function SyncedAuthCheck(args, ctrl){
 		let {request:req} = ctrl;
 		let [type, token] = ('' + req.headers[ 'authorization' ]).split( ' ' );
 		if ( type !== "bearer" ) {
@@ -118,5 +124,12 @@
 			authorized:false,
 			content: "Your authorization header must be bearer 3.14159265358979323846"
 		};
-	};
+	}
+	function DelayedAuthCheck(args, ctrl){
+		return new Promise((fulfill, reject)=>{
+			setTimeout(()=>{
+				fulfill(SyncedAuthCheck(args, ctrl));
+			}, 3000);
+		});
+	}
 })();

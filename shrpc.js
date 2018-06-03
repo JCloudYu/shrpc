@@ -123,8 +123,9 @@
 					});
 				}
 			})
-			.then((preprocess)=>{
-				let {args, handler} = preprocess;
+			// Check whether the input args and target handler are valid
+			.then((stageArgs)=>{
+				let {args, handler} = stageArgs;
 				
 				// region [ Trap if no handler is available ]
 				// Parse and fetch method identifier
@@ -142,7 +143,7 @@
 					res.writeHead(404, rHeader);
 					res.write(JSON.stringify(rBody));
 					res.end();
-					return;
+					return Promise.reject({trapped:true});
 				}
 				// endregion
 			
@@ -163,13 +164,21 @@
 					res.writeHead(400, rHeader);
 					res.write(JSON.stringify(rBody));
 					res.end();
-					return;
+					
+					return Promise.reject({trapped:true});
 				}
 				// endregion
+				
+				return stageArgs;
+			})
+			// Perform handle.verify and handle.auth
+			.then((stageArgs)=>{
+				let {args, handler} = stageArgs;
 				
 				
 				
 				// Invoke the procedure
+				let _promiseChain = Promise.resolve();
 				let _env_ctrl = {};
 				{
 					Object.defineProperties(_env_ctrl, {
@@ -185,52 +194,58 @@
 				// Check if the api needs to perform auth checking
 				// handler.auth must be a function
 				if ( __IS_FUNC(handler.auth) ) {
-					let _rStatus = false, _result = handler.auth(args, _env_ctrl);
-					if ( !_result || _result === 401 ) {
-						_rStatus = 401;
-						_result = null;
-					}
-					else
-					if ( _result === 403 ) {
-						_rStatus = 403;
-						_result = null;
-					}
-					else
-					if ( __IS_OBJ(_result) ) {
-						_rStatus = ( !_result.authorized ) ? 401 : 403;
-						delete _result.authorized;
-					}
-					
-					
-					
-					if ( _rStatus !== false ) {
-						if ( res.finished ) return;
-						
-						let _rBody = {};
-						if ( _rStatus === 401 ) {
-							_rBody.error = 401001;
-							_rBody.msg = "Authorization is required to access this api!";
+					_promiseChain = _promiseChain
+					.then(()=>{
+						return handler.auth(args, _env_ctrl);
+					})
+					.then((_result)=>{
+						let _rStatus = false;
+						if ( !_result || _result === 401 ) {
+							_rStatus = 401;
+							_result = null;
 						}
-						else {
-							_rBody.error = 403001;
-							_rBody.msg = "You're not authorized to access this api!";
+						else
+						if ( _result === 403 ) {
+							_rStatus = 403;
+							_result = null;
 						}
-						
-						if ( _result ) {
-							_rBody.detail = _result;
+						else
+						if ( __IS_OBJ(_result) ) {
+							_rStatus = ( !_result.authorized ) ? 401 : 403;
+							delete _result.authorized;
 						}
 						
 						
-						let _rHeader = { 'Content-Type': 'application/json' };
-						if ( _id ) {
-							_rHeader[ 'X-Request-Id' ] = _rBody._id = _id;
-						}
 						
-						res.writeHead(_rStatus, _rHeader);
-						res.write(JSON.stringify(_rBody));
-						res.end();
-						return;
-					}
+						if ( _rStatus !== false ) {
+							if ( res.finished ) return;
+							
+							let _rBody = {};
+							if ( _rStatus === 401 ) {
+								_rBody.error = 401000;
+								_rBody.msg = "Authorization is required to access this api!";
+							}
+							else {
+								_rBody.error = 403000;
+								_rBody.msg = "You're not authorized to access this api!";
+							}
+							
+							if ( _result ) {
+								_rBody.detail = _result;
+							}
+							
+							
+							let _rHeader = { 'Content-Type': 'application/json' };
+							if ( _id ) {
+								_rHeader[ 'X-Request-Id' ] = _rBody._id = _id;
+							}
+							
+							res.writeHead(_rStatus, _rHeader);
+							res.write(JSON.stringify(_rBody));
+							res.end();
+							return Promise.reject({trapped:true});
+						}
+					});
 				}
 				// endregion
 				
@@ -239,61 +254,73 @@
 				// handler.verify must be an instance of Object
 				if ( handler.verify && __IS_OBJ(handler.verify) ) {
 					let verify = handler.verify;
-					let __errCollect = [];
-					for(let argName in verify) {
-						if ( !verify.hasOwnProperty(argName) ) continue;
-						let passed, arg=verify[argName];
-						
-						
-						if (Array.isArray(arg)) {
-							passed = arg.indexOf(args[argName]);
-							if ( passed < 0 ) {
-								__errCollect.push( `Argument \`${argName}\` is invalid!` )
+				
+					_promiseChain = _promiseChain
+					.then(()=>{
+						let __errCollect = [];
+						for(let argName in verify) {
+							if ( !verify.hasOwnProperty(argName) ) continue;
+							let passed, arg=verify[argName];
+							
+							
+							if (Array.isArray(arg)) {
+								passed = arg.indexOf(args[argName]);
+								if ( passed < 0 ) {
+									__errCollect.push( `Argument \`${argName}\` is invalid!` )
+								}
+								continue;
 							}
-							continue;
-						}
-						
-						// func means that the arg require custom checking
-						if (__IS_FUNC(arg)) {
-							passed = arg(args[argName]);
-							if ( !passed ) {
-								__errCollect.push( `Argument \`${argName}\` is invalid!` );
+							
+							// func means that the arg require custom checking
+							if (__IS_FUNC(arg)) {
+								passed = arg(args[argName]);
+								if ( !passed ) {
+									__errCollect.push( `Argument \`${argName}\` is invalid!` );
+								}
+								continue;
 							}
-							continue;
-						}
-						
-						// true means the arg is required but the content is not checked
-						if (arg === true) {
-							passed = args.hasOwnProperty(argName);
-							if ( !passed ) {
-								__errCollect.push( `Argument \`${argName}\` is required!` );
+							
+							// true means the arg is required but the content is not checked
+							if (arg === true) {
+								passed = args.hasOwnProperty(argName);
+								if ( !passed ) {
+									__errCollect.push( `Argument \`${argName}\` is required!` );
+								}
+								continue;
 							}
-							continue;
-						}
-					}
-					
-					if ( __errCollect.length > 0 ) {
-						if ( res.finished ) return;
-						let rBody = {
-							error:400002,
-							msg: "The provided arguments are insufficient or invalid to invoke the procedure!",
-							detail: __errCollect
-						};
-						let rHeader = { 'Content-Type': 'application/json' };
-						if ( _id ) {
-							rHeader[ 'X-Request-Id' ] = rBody._id = _id;
 						}
 						
-						res.writeHead(400, rHeader);
-						res.write(JSON.stringify(rBody));
-						res.end();
-						return;
-					}
+						if ( __errCollect.length > 0 ) {
+							if ( res.finished ) return;
+							let rBody = {
+								error:400002,
+								msg: "The provided arguments are insufficient or invalid to invoke the procedure!",
+								detail: __errCollect
+							};
+							let rHeader = { 'Content-Type': 'application/json' };
+							if ( _id ) {
+								rHeader[ 'X-Request-Id' ] = rBody._id = _id;
+							}
+							
+							res.writeHead(400, rHeader);
+							res.write(JSON.stringify(rBody));
+							res.end();
+							return Promise.reject({trapped:true});
+						}
+					});
 				}
 				// endregion
 				
-				
-				
+				// The following then will be invoked if and only if no error occurs
+				return _promiseChain.then(()=>{
+					stageArgs.ctrl = _env_ctrl;
+					return stageArgs;
+				});
+			})
+			// Execute the targeted api
+			.then((stageArgs)=>{
+				let {args, handler, ctrl:_env_ctrl} = stageArgs;
+			
 				return Promise.resolve().then(()=>{
 					return handler(args, _env_ctrl);
 				})
@@ -331,6 +358,12 @@
 				});
 			})
 			.catch((err)=>{
+				if ( err.trapped ) {
+					return;	// Do nothing if incoming request is successfully trapped!
+				}
+			
+			
+			
 				if ( !res.finished ) {
 					let rBody = {
 						error: 500000,
