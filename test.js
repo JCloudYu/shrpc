@@ -16,7 +16,7 @@
 		method:(args, ctrl)=>{
 			return "OOPS CLASS1!";
 		},
-		_class: 'class1'
+		_cate: 'class1'
 	})
 	.handle( 'ns', 'class2', {
 		method:(args, ctrl)=>{
@@ -28,7 +28,7 @@
 		}
 	})
 	.expand( 'ns', {
-		_class: 'class2',
+		_cate: 'class2',
 		method2:(args, ctrl)=>{
 			return {
 				_id:ctrl._id,

@@ -21,26 +21,26 @@
 		Object.defineProperties(_interface, {
 			handle:{
 				configurable:false, enumerable:true, writable:false,
-				value:function(ns=null, cls=null, definitions={}) {
+				value:function(ns=null, cate=null, definitions={}) {
 					let defVerified = false;
 				
-					if ( arguments.length === 2 && __IS_OBJ(cls) ) {
-						definitions = cls;
-						cls = definitions._class||'_';
+					if ( arguments.length === 2 && __IS_OBJ(cate) ) {
+						definitions = cate;
+						cate = definitions._cate||definitions._class||'_';
 						defVerified = true;
 					}
 				
-					if ( !ns || !cls ) {
+					if ( !ns || !cate ) {
 						throw new Error( "Invalid handler configuration info!" );
 					}
 					
 					_handlers[ns] = _handlers[ns] || {};
 					
 					if ( defVerified || __IS_OBJ(definitions) ) {
-						_handlers[ns][cls] = definitions;
+						_handlers[ns][cate] = definitions;
 					}
 					else {
-						delete _handlers[ns][cls];
+						delete _handlers[ns][cate];
 					}
 					
 					return _interface;
@@ -48,16 +48,16 @@
 			},
 			expand:{
 				configurable:false, enumerable:true, writable:false,
-				value:function(ns=null, cls=null, definitions={}) {
+				value:function(ns=null, cate=null, definitions={}) {
 					let defVerified = false;
 				
-					if ( arguments.length === 2 && __IS_OBJ(cls) ) {
-						definitions = cls;
-						cls = definitions._class||'_';
+					if ( arguments.length === 2 && __IS_OBJ(cate) ) {
+						definitions = cate;
+						cate = definitions._cate||definitions._class||'_';
 						defVerified = true;
 					}
 				
-					if ( !ns || !cls ) {
+					if ( !ns || !cate ) {
 						throw new Error( "Invalid handler configuration info!" );
 					}
 					
@@ -67,7 +67,7 @@
 						return _interface;
 					}
 					
-					let _cate = _handlers[ns][cls] = _handlers[ns][cls] || {};
+					let _cate = _handlers[ns][cate] = _handlers[ns][cate] || {};
 					for( let idx in definitions ) {
 						if ( !definitions.hasOwnProperty(idx) ) continue;
 						_cate[idx] = definitions[idx];
