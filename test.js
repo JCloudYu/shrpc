@@ -25,6 +25,16 @@
 				a:1, b:2,
 				comment:"The lib will return everything you feed it!"
 			};
+		}
+	})
+	.expand( 'ns', {
+		_class: 'class2',
+		method2:(args, ctrl)=>{
+			return {
+				_id:ctrl._id,
+				a:1, b:2,
+				comment:"The lib will return everything you feed it!"
+			};
 		},
 		redir:(args, ctrl)=>{
 			let {request:req, response:res} = ctrl;

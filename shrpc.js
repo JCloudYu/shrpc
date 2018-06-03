@@ -46,6 +46,36 @@
 					return _interface;
 				}
 			},
+			expand:{
+				configurable:false, enumerable:true, writable:false,
+				value:function(ns=null, cls=null, definitions={}) {
+					let defVerified = false;
+				
+					if ( arguments.length === 2 && __IS_OBJ(cls) ) {
+						definitions = cls;
+						cls = definitions._class||'_';
+						defVerified = true;
+					}
+				
+					if ( !ns || !cls ) {
+						throw new Error( "Invalid handler configuration info!" );
+					}
+					
+					_handlers[ns] = _handlers[ns] || {};
+					
+					if ( !defVerified && !__IS_OBJ(definitions) ) {
+						return _interface;
+					}
+					
+					let _cate = _handlers[ns][cls] = _handlers[ns][cls] || {};
+					for( let idx in definitions ) {
+						if ( !definitions.hasOwnProperty(idx) ) continue;
+						_cate[idx] = definitions[idx];
+					}
+					
+					return _interface;
+				}
+			},
 			listen:{
 				configurable:false, enumerable:true, writable:false,
 				value:(...args)=>{
