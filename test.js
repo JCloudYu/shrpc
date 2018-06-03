@@ -60,7 +60,7 @@
 		},
 		error4:(args, ctrl)=>{
 			throw ctrl.helper.GenUserError(
-				401000,
+				401001,
 				"You're not authorized!",
 				{"_!!":"Invalid authorization info!"},
 				401
