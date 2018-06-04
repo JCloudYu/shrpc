@@ -99,8 +99,8 @@
 			Promise.resolve()
 			// Parse and fetch method identifier
 			.then(()=>{
-				let [ , ns='', cls='', method='' ] = (path.match(REQ_CHECK) || []);
-				return __FETCH_HANDLER( _handlers, ns, cls, method );
+				let [ , ns='', cate='', method='' ] = (path.match(REQ_CHECK) || []);
+				return __FETCH_HANDLER( _handlers, ns, cate, method );
 			})
 			// Parse post content according to request's http method and content-type
 			.then((handler)=>{
@@ -431,8 +431,8 @@
 			}
 		});
 	}
-	function __FETCH_HANDLER( handler, ns, cls, method ) {
-		if ( !ns || !cls || !method ) return undefined;
+	function __FETCH_HANDLER( handler, ns, cate, method ) {
+		if ( !ns || !cate || !method ) return undefined;
 	
 	
 		let result = handler;
@@ -440,7 +440,7 @@
 		result = result[ns];
 		if ( !result ) return undefined;
 		
-		result = result[cls];
+		result = result[cate];
 		if ( !result ) return undefined;
 		
 		
