@@ -66,10 +66,12 @@ The following table defines the standard error codes reserved for shrpc.
 
 | error | description |
 |:----------:|:--------|
-| 401000  | The information is insufficient to identify the accessor |
-| 403000  | The authorized information has insufficient privilege to invoke the procedure |
-| 400001  | The provided request payload is not a valid json syntax |
-| 400002  | The arguments provided in the payload is insufficient or invalid to invoke the procedure |
+| 400000 | Use this if you don't wanna specify the error detail.... |
+| 400001 | The provided request payload is not a valid json syntax |
+| 400002 | The arguments provided in the payload is insufficient or invalid to invoke the procedure |
+| 401000 | The information is insufficient to identify the accessor |
+| 403000 | The authorized information has insufficient privilege to invoke the procedure |
+| 500000 | Unexpected internal server error! If you catch this, that means you got problem with your code.... |
 
 Please note that error codes locate within following interval are reserved for shrpc.
 ```
