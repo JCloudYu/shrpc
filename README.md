@@ -43,6 +43,8 @@ The standard http status code for specific conditions are defined in following t
 |:------------:|:-------|
 | 200 | The procedure is invoked and terminated normally |
 | 400 | There are something wrong with the request payload |
+| 401 | The info is insufficient or invalid to identify the accessor |
+| 403 | The authorization info is correct but without sufficient privilege |
 | 404 | The procedure is not defined |
 | 500 | The procedure cannot be executed or the invocation is terminated unexpectedly due to some server internal faults |
 
@@ -58,9 +60,14 @@ The response payload is a json object contains following fields.
 | error	 | error      | 0             | The detailed error code used to identify exact error conditions |
 | msg	 | error	  | ""  | The human readable error message |
 
+
+
 The following table defines the standard error codes for specific conditions.
+
 | error | comment |
 |:----------:|:--------|
-| 400001	 | The provided request payload is not a valid json syntax |
-| 400002	 | The arguments provided in the payload is insufficient or invalid to invoke the procedure |
-| 400100+	 | System customized errors |
+| 401000  | The information is insufficient to identify the accessor |
+| 403000  | The authorized information has insufficient privilege to invoke the procedure |
+| 400001  | The provided request payload is not a valid json syntax |
+| 400002  | The arguments provided in the payload is insufficient or invalid to invoke the procedure |
+| 400100+ | System customized errors |
