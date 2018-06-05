@@ -62,12 +62,21 @@ The response payload is a json object contains following fields.
 
 
 
-The following table defines the standard error codes for specific conditions.
+The following table defines the standard error codes reserved for shrpc.
 
-| error | comment |
+| error | description |
 |:----------:|:--------|
 | 401000  | The information is insufficient to identify the accessor |
 | 403000  | The authorized information has insufficient privilege to invoke the procedure |
 | 400001  | The provided request payload is not a valid json syntax |
 | 400002  | The arguments provided in the payload is insufficient or invalid to invoke the procedure |
-| 400100+ | System customized errors |
+
+Please note that error codes locate within following interval are reserved for shrpc.
+```
+[HTTP_STATUS_CODE * 100, HTTP_STATUS_CODE * 100 + 100]
+```
+
+Developers can feel free to define custom error codes within following interval.
+```
+(HTTP_STATUS_CODE * 100, {HTTP_STATUS_CODE+1} * 100)
+```
