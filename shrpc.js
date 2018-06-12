@@ -37,7 +37,19 @@
 					_handlers[ns] = _handlers[ns] || {};
 					
 					if ( defVerified || __IS_OBJ(definitions) ) {
-						_handlers[ns][cate] = definitions;
+						let _cate = _handlers[ns][cate] = {};
+						
+						for( let idx in definitions ) {
+							if ( !definitions.hasOwnProperty(idx) ) continue;
+							
+							let handler = definitions[idx];
+							if ( !__IS_FUNC(handler) ) continue;
+							
+							Object.defineProperty(handler, 'signature', {
+								configurable:false, writable:false, enumerable:true, value:`${ns}::${cate}::${idx}`
+							});
+							_cate[idx] = handler;
+						}
 					}
 					else {
 						delete _handlers[ns][cate];
@@ -70,7 +82,14 @@
 					let _cate = _handlers[ns][cate] = _handlers[ns][cate] || {};
 					for( let idx in definitions ) {
 						if ( !definitions.hasOwnProperty(idx) ) continue;
-						_cate[idx] = definitions[idx];
+						
+						let handler = definitions[idx];
+						if ( !__IS_FUNC(handler) ) continue;
+						
+						Object.defineProperty(handler, 'signature', {
+							configurable:false, writable:false, enumerable:true, value:`${ns}::${cate}::${idx}`
+						});
+						_cate[idx] = handler
 					}
 					
 					return _interface;
@@ -182,6 +201,7 @@
 				let _env_ctrl = {};
 				{
 					Object.defineProperties(_env_ctrl, {
+						_sig:{configurable:false, writable:false, enumerable:true, value:`${handler.signature}`},
 						_id:{configurable:false, writable:false, enumerable:true, value:_id||null},
 						request:{configurable:false, writable:false, enumerable:true, value:req},
 						response:{configurable:false, writable:false, enumerable:true, value:res},

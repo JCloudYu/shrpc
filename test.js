@@ -21,6 +21,7 @@
 	.handle( 'ns', 'class2', {
 		method:(args, ctrl)=>{
 			return {
+				_sig:ctrl._sig,
 				_id:ctrl._id,
 				a:1, b:2,
 				comment:"The lib will return everything you feed it!"
