@@ -7,13 +7,21 @@
 (() => {
 	"use strict";
 	
-	const URL = require( 'url' );
+	const URL  = require( 'url' );
 	const http = require( 'http' );
 	
 	const REQ_CHECK = /^\/([a-zA-Z_][a-zA-Z0-9_]+)\/([a-zA-Z_][a-zA-Z0-9_]+)\/([a-zA-Z_][a-zA-Z0-9_]+)$/;
-	const HELPER = {};
+	const SHRPC_HELPER = {};
+	Object.defineProperties(SHRPC_HELPER, {
+		GenUserError: {
+			configurable:false, writable:false, enumerable:true,
+			value:(code, msg, detailInfo=null, status_code=400)=>{
+				return {error:code, msg, detail:detailInfo, user_error:true, status_code};
+			}
+		}
+	});
 	
-	module.exports = (serverInst=null)=>{
+	const SHRPC_FACTORY = (serverInst=null)=>{
 		let _server = serverInst || http.createServer();
 		let _handlers = {};
 		let _interface = {};
@@ -205,7 +213,9 @@
 						_id:{configurable:false, writable:false, enumerable:true, value:_id||null},
 						request:{configurable:false, writable:false, enumerable:true, value:req},
 						response:{configurable:false, writable:false, enumerable:true, value:res},
-						helper:{configurable:false, writable:false, enumerable:true, value:HELPER}
+						
+						// DEPRECATED ctrl.helper
+						helper:{get:()=>{console.warn("ctrl.helper is deprecated. Please use following statement instead!\nlet {helper} = require('shrpc');"); return SHRPC_HELPER;}, configurable:false, enumerable:true}
 					});
 				}
 				
@@ -306,7 +316,6 @@
 								if ( !passed ) {
 									__errCollect.push( `Argument \`${argName}\` is required!` );
 								}
-								continue;
 							}
 						}
 						
@@ -409,14 +418,10 @@
 		
 		return _interface;
 	};
-	
-	Object.defineProperties(HELPER, {
-		GenUserError: {
-			configurable:false, writable:false, enumerable:true,
-			value:(code, msg, detailInfo=null, status_code=400)=>{
-				return {error:code, msg, detail:detailInfo, user_error:true, status_code};
-			}
-		}
+	module.exports = SHRPC_FACTORY;
+	Object.defineProperties(SHRPC_FACTORY, {
+		shrpc: {value:SHRPC_FACTORY, configurable:false, writable:false, enumerable:true},
+		helper: {value:SHRPC_HELPER, configurable:false, writable:false, enumerable:true}
 	});
 	
 	

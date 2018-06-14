@@ -7,7 +7,7 @@
 (() => {
 	"use strict";
 	
-	let shrpc = require( './shrpc' );
+	let {shrpc, helper} = require( './shrpc' );
 	let serverInst = shrpc( require( 'http' ).createServer() );
 	let specialClass;
 	
@@ -43,14 +43,14 @@
 			res.end();
 		},
 		error1:(args, ctrl)=>{
-			throw ctrl.helper.GenUserError(
+			throw helper.GenUserError(
 				400012,
 				"This is meant to be failed!",
 				{_:"error1"}
 			);
 		},
 		error2:(args, ctrl)=>{
-			return Promise.reject(ctrl.helper.GenUserError(
+			return Promise.reject(helper.GenUserError(
 				400012,
 				"This is meant to be failed!",
 				{_:"error2"}
@@ -60,7 +60,7 @@
 			JSON.parse('//');
 		},
 		error4:(args, ctrl)=>{
-			throw ctrl.helper.GenUserError(
+			throw helper.GenUserError(
 				401001,
 				"You're not authorized!",
 				{"_!!":"Invalid authorization info!"},
