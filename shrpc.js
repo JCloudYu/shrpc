@@ -457,6 +457,7 @@
 		return _interface;
 	};
 	const moduleInst = module.exports = (...args)=>{
+		// DEPRECATED
 		console.warn("Directly invocation of shrpc module is deprecated! Please use following statements instead!\nlet {shrpc, helper} = require('shrpc');\nlet inst = shrpc();");
 		return SHRPC_FACTORY(...args);
 	};
