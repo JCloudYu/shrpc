@@ -4,71 +4,15 @@
  * Author: JCloudYu
  * Create Date: Apr. 18, 2018
  */
-(() => {
+(async()=>{
 	"use strict";
 	
 	let {shrpc, helper} = require( './shrpc' );
-	let serverInst = shrpc( require( 'http' ).createServer() );
+	let serverInst = shrpc(require( 'http' ).createServer());
 	let specialClass;
 	
-	serverInst
-	.handle( 'ns', {
-		method:(args, ctrl)=>{
-			return "OOPS CLASS1!";
-		},
-		_cate: 'class1'
-	})
-	.handle( 'ns', 'class2', {
-		method:(args, ctrl)=>{
-			return {
-				_sig:ctrl._sig,
-				_id:ctrl._id,
-				a:1, b:2,
-				comment:"The lib will return everything you feed it!"
-			};
-		}
-	})
-	.expand( 'ns', {
-		_cate: 'class2',
-		method2:(args, ctrl)=>{
-			return {
-				_id:ctrl._id,
-				a:1, b:2,
-				comment:"The lib will return everything you feed it!"
-			};
-		},
-		redir:(args, ctrl)=>{
-			let {request:req, response:res} = ctrl;
-			res.writeHead( 307, { "Location":`http://${req.headers[ 'host' ]}/ns/class2/method` });
-			res.end();
-		},
-		error1:(args, ctrl)=>{
-			throw helper.GenUserError(
-				400012,
-				"This is meant to be failed!",
-				{_:"error1"}
-			);
-		},
-		error2:(args, ctrl)=>{
-			return Promise.reject(helper.GenUserError(
-				400012,
-				"This is meant to be failed!",
-				{_:"error2"}
-			));
-		},
-		error3:(args, ctrl)=>{
-			JSON.parse('//');
-		},
-		error4:(args, ctrl)=>{
-			throw helper.GenUserError(
-				401001,
-				"You're not authorized!",
-				{"_!!":"Invalid authorization info!"},
-				401
-			);
-		}
-	})
-	.handle( 'ns', 'class3', specialClass={
+	console.log( "Initializing class3 category" );
+	serverInst.handle( 'ns', 'class3', specialClass={
 		argChkCall(args, ctrl){
 			return args;
 		},
@@ -81,9 +25,7 @@
 		authCheckDelay(args, ctrl) {
 			return args;
 		}
-	})
-	.listen( 8880, 'localhost' );
-	
+	});
 	specialClass.argChkCall.verify = {
 		"a": true,
 		"b": [ "1", "2", "3" ],
@@ -104,6 +46,19 @@
 	};
 	specialClass.authCheck.auth = SyncedAuthCheck;
 	specialClass.authCheckDelay.auth = DelayedAuthCheck;
+	
+	
+	
+	
+	console.log( "Start using helper to initialize the instance..." );
+	(await helper.InitializeSHRPC(serverInst, [
+		'./test-loader',
+		'./test-loader-delayed',
+	], require, true)).listen( 8880, 'localhost' );
+	console.log( "All done!!!" );
+	
+	
+	
 	
 	function SyncedAuthCheck(args, ctrl){
 		let {request:req} = ctrl;

@@ -10,6 +10,10 @@
 	const URL  = require( 'url' );
 	const http = require( 'http' );
 	
+	
+	const ROOT_REQUIRE = (...args)=>{
+		return require.main.require(...args);
+	};
 	const REQ_CHECK = /^\/([a-zA-Z_][a-zA-Z0-9_]+)\/([a-zA-Z_][a-zA-Z0-9_]+)\/([a-zA-Z_][a-zA-Z0-9_]+)$/;
 	const SHRPC_HELPER = {};
 	Object.defineProperties(SHRPC_HELPER, {
@@ -17,6 +21,16 @@
 			configurable:false, writable:false, enumerable:true,
 			value:(code, msg, detailInfo=null, status_code=400)=>{
 				return {error:code, msg, detail:detailInfo, user_error:true, status_code};
+			}
+		},
+		InitializeSHRPC:{
+			configurable:false, writable:false, enumerable:true,
+			value:(inst, initializers=[], loader=ROOT_REQUIRE, promisefy=false)=>{
+				let inits = [];
+				initializers.forEach((modulePath)=>{
+					inits.push(loader(modulePath));
+				});
+				return inst.initWith(inits, promisefy);
 			}
 		}
 	});
@@ -27,6 +41,26 @@
 		let _interface = {};
 		
 		Object.defineProperties(_interface, {
+			initWith:{
+				configurable:false, enumerable:true, writable:false,
+				value:(initializers=[], promisefy=false)=>{
+					if ( promisefy ) {
+						let _promiseChain = Promise.resolve();
+						initializers.forEach((initializer)=>{
+							_promiseChain = _promiseChain.then(()=>{
+								return initializer(_interface);
+							});
+						});
+						return _promiseChain.then(()=>{return _interface;});
+					}
+					else {
+						initializers.forEach((initializer)=>{
+							initializer(_interface);
+						});
+						return _interface;
+					}
+				}
+			},
 			handle:{
 				configurable:false, enumerable:true, writable:false,
 				value:function(ns=null, cate=null, definitions={}) {
@@ -92,12 +126,16 @@
 						if ( !definitions.hasOwnProperty(idx) ) continue;
 						
 						let handler = definitions[idx];
-						if ( !__IS_FUNC(handler) ) continue;
-						
-						Object.defineProperty(handler, 'signature', {
-							configurable:false, writable:false, enumerable:true, value:`${ns}::${cate}::${idx}`
-						});
-						_cate[idx] = handler
+						if ( __IS_FUNC(handler) ) {
+							Object.defineProperty(handler, 'signature', {
+								configurable:false, writable:false, enumerable:true, value:`${ns}::${cate}::${idx}`
+							});
+							_cate[idx] = handler
+						}
+						else
+						if ( [undefined, null, false].indexOf(handler) >= 0 ) {
+							delete _cate[idx];
+						}
 					}
 					
 					return _interface;
@@ -418,12 +456,14 @@
 		
 		return _interface;
 	};
-	module.exports = SHRPC_FACTORY;
-	Object.defineProperties(SHRPC_FACTORY, {
+	const moduleInst = module.exports = (...args)=>{
+		console.warn("Directly invocation of shrpc module is deprecated! Please use following statements instead!\nlet {shrpc, helper} = require('shrpc');\nlet inst = shrpc();");
+		return SHRPC_FACTORY(...args);
+	};
+	Object.defineProperties(moduleInst, {
 		shrpc: {value:SHRPC_FACTORY, configurable:false, writable:false, enumerable:true},
 		helper: {value:SHRPC_HELPER, configurable:false, writable:false, enumerable:true}
 	});
-	
 	
 	
 	
