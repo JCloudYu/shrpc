@@ -320,61 +320,104 @@
 				// region [ process handler.verify ]
 				// Check if the developer wants to verify the input arguments
 				// handler.verify must be an instance of Object
-				if ( handler.verify && __IS_OBJ(handler.verify) ) {
+				if ( handler.verify ) {
 					let verify = handler.verify;
-				
-					_promiseChain = _promiseChain
-					.then(()=>{
-						let __errCollect = [];
-						for(let argName in verify) {
-							if ( !verify.hasOwnProperty(argName) ) continue;
-							let passed, arg=verify[argName];
+					
+					if ( __IS_FUNC(verify) ) {
+						_promiseChain = _promiseChain.then(()=>{
+							let result = verify(args);
+							if ( result === true ) { return; }
 							
 							
-							if (Array.isArray(arg)) {
-								passed = arg.indexOf(args[argName]);
-								if ( passed < 0 ) {
-									__errCollect.push( `Argument \`${argName}\` is invalid!` )
-								}
-								continue;
-							}
-							
-							// func means that the arg require custom checking
-							if (__IS_FUNC(arg)) {
-								passed = arg(args[argName]);
-								if ( !passed ) {
-									__errCollect.push( `Argument \`${argName}\` is invalid!` );
-								}
-								continue;
-							}
-							
-							// true means the arg is required but the content is not checked
-							if (arg === true) {
-								passed = args.hasOwnProperty(argName);
-								if ( !passed ) {
-									__errCollect.push( `Argument \`${argName}\` is required!` );
-								}
-							}
-						}
-						
-						if ( __errCollect.length > 0 ) {
 							if ( res.finished ) return;
 							let rBody = {
 								error:400002,
-								msg: "The provided arguments are insufficient or invalid to invoke the procedure!",
-								detail: __errCollect
+								msg: "The provided arguments are insufficient or invalid to invoke the procedure!"
 							};
 							let rHeader = { 'Content-Type': 'application/json' };
 							if ( _id ) {
 								rHeader[ 'X-Request-Id' ] = rBody._id = _id;
 							}
 							
+							
+							
+							if ( result ) { rBody.detail = result; }
 							res.writeHead(400, rHeader);
 							res.write(JSON.stringify(rBody));
 							res.end();
 							return Promise.reject({trapped:true});
+						});
+					}
+					else
+					if ( __IS_OBJ(verify) ) {
+						_promiseChain = _promiseChain.then(()=>{
+							let __errCollect = [];
+							for(let argName in verify) {
+								if ( !verify.hasOwnProperty(argName) ) continue;
+								let passed, arg=verify[argName];
+								
+								
+								if (Array.isArray(arg)) {
+									passed = arg.indexOf(args[argName]);
+									if ( passed < 0 ) {
+										__errCollect.push( `Argument \`${argName}\` is invalid!` )
+									}
+									continue;
+								}
+								
+								// func means that the arg require custom checking
+								if (__IS_FUNC(arg)) {
+									passed = arg(args[argName]);
+									if ( !passed ) {
+										__errCollect.push( `Argument \`${argName}\` is invalid!` );
+									}
+									continue;
+								}
+								
+								// true means the arg is required but the content is not checked
+								if (arg === true) {
+									passed = args.hasOwnProperty(argName);
+									if ( !passed ) {
+										__errCollect.push( `Argument \`${argName}\` is required!` );
+									}
+								}
+							}
+							
+							if ( __errCollect.length > 0 ) {
+								if ( res.finished ) return;
+								let rBody = {
+									error:400002,
+									msg: "The provided arguments are insufficient or invalid to invoke the procedure!",
+									detail: __errCollect
+								};
+								let rHeader = { 'Content-Type': 'application/json' };
+								if ( _id ) {
+									rHeader[ 'X-Request-Id' ] = rBody._id = _id;
+								}
+								
+								res.writeHead(400, rHeader);
+								res.write(JSON.stringify(rBody));
+								res.end();
+								return Promise.reject({trapped:true});
+							}
+						});
+					}
+					else {
+						if ( res.finished ) return;
+						let rBody = {
+							error:500001,
+							msg: "The verification context of this procedure is invalid!",
+						};
+						let rHeader = { 'Content-Type': 'application/json' };
+						if ( _id ) {
+							rHeader[ 'X-Request-Id' ] = rBody._id = _id;
 						}
-					});
+						
+						res.writeHead(500, rHeader);
+						res.write(JSON.stringify(rBody));
+						res.end();
+						return Promise.reject({trapped:true});
+					}
 				}
 				// endregion
 				

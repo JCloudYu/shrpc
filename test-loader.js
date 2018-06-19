@@ -33,6 +33,7 @@
 			method2:(args, ctrl)=>{
 				return {
 					_id:ctrl._id,
+					_sig:ctrl._sig,
 					a:1, b:2,
 					comment:"The lib will return everything you feed it!"
 				};
@@ -66,7 +67,25 @@
 					{"_!!":"Invalid authorization info!"},
 					401
 				);
-			}
+			},
+			error5:(()=>{
+				let _=(args, ctrl)=>{
+					return {
+						_id:ctrl._id,
+						_sig:ctrl._sig,
+						a:1, b:2,
+						comment:"This function will never be invoked!"
+					};
+				};
+				_.verify=(args)=>{
+					if ( !args.id && !args.identity ) {
+						return "Either argument id or argument identity must be existed!"
+					}
+					
+					return true;
+				};
+				return _;
+			})()
 		})
 	};
 })();

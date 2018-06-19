@@ -2,19 +2,17 @@
 SHRPC protocol is proposed to simplify the disadvantages of JSONRPC version 2.0.
  
 
-
-## Format ##
-### Request ###
+## Request ##
 Each valid SHRPC request consists of two parts, procedure descriptor and invocation payload.
 
-#### Procedure Descriptor ####
+### Procedure Descriptor ###
 Procedure descriptor, which describes the procedure to be invoked, is represented by a network URI.
 
 ```http
 POST /{namespace}/{cate}/{procedure}?[_id={procedure identifier}]
 ```
 
-#### Invocation Payload ####
+### Invocation Payload ###
 Invocation payload is a json object of which the fields are the arguments to execute the procedure.
 
 ```javascript
@@ -24,19 +22,19 @@ Invocation payload is a json object of which the fields are the arguments to exe
 }
 ```
 
-#### Privilege Control ####
+### Privilege Control ###
 The SHRPC request is a typical http request. Hence, http headers that are used in user privilege control like Authorization and activity tracking such as Cookie header is also accepted by SHRPC.
 
-#### Request Method ####
+### Request Method ###
 SHRPC should accept both GET and POST methods, where POST method is defined as an invocation with arguments and GET is, in contrast, without arguments.
 
 
 
 
-### Response ###
+## Response ##
 The SHRPC responds is also constructed by two parts, execution state and response payload. The execution state is represented by http status code, which represents the invocation status of the procedure request. Response payload contains the execution result or detailed error information.
 
-#### Execution State ####
+### Execution State ###
 The standard http status code for specific conditions are defined in following table.
 
 | code | comment |
@@ -50,7 +48,7 @@ The standard http status code for specific conditions are defined in following t
 
 Please note that the SHRPC is a standard http request. Hence, other standard http code such as 301, 302, 307, 308, 401 and 403 must be followed as well.
 
-#### Response Payload ####
+### Response Payload ###
 The response payload is a json object contains following fields.
 
 | field  | occurrence | default | comment |
@@ -62,6 +60,7 @@ The response payload is a json object contains following fields.
 
 
 
+## Reserved and Customizable Error Code Ranges ##
 The following table defines the standard error codes reserved for shrpc.
 
 | error | description |
@@ -75,11 +74,7 @@ The following table defines the standard error codes reserved for shrpc.
 | 500000 | Unexpected internal server error! If you catch this, that means you got problem with your code.... |
 
 Please note that error codes locate within following interval are reserved for shrpc.
-```
-[HTTP_STATUS_CODE * 100, HTTP_STATUS_CODE * 100 + 100]
-```
+> [ HTTP_STATUS_CODE * 100, HTTP_STATUS_CODE * 100 + 100 ]
 
 Developers can feel free to define custom error codes within following interval.
-```
-(HTTP_STATUS_CODE * 100, {HTTP_STATUS_CODE+1} * 100)
-```
+> ( HTTP_STATUS_CODE * 100, {HTTP_STATUS_CODE + 1} * 100 )
