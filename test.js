@@ -77,7 +77,7 @@
 		}
 		
 		return {
-			authorized:false,
+			http_status:401,
 			error: 401001,
 			msg: "You got a massive problem in your code!",
 			detail: {

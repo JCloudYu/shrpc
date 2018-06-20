@@ -282,7 +282,13 @@
 						}
 						else
 						if ( __IS_OBJ(_result) ) {
-							_rStatus = ( !_result.authorized ) ? 401 : 403;
+							if ( _result.http_status !== undefined ) {
+								_rStatus = ( _result.http_status === 403 ) ? 403 : 401;
+							}
+							else {
+								_rStatus = ( !_result.authorized ) ? 401 : 403;
+							}
+							
 							delete _result.authorized;
 						}
 						
