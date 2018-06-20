@@ -78,7 +78,11 @@
 		
 		return {
 			authorized:false,
-			content: "Your authorization header must be bearer 3.14159265358979323846"
+			error: 401001,
+			msg: "You got a massive problem in your code!",
+			detail: {
+				content: "Your authorization header must be bearer 3.14159265358979323846"
+			}
 		};
 	}
 	function DelayedAuthCheck(args, ctrl){

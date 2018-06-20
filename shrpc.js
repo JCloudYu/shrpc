@@ -276,14 +276,9 @@
 					})
 					.then((_result)=>{
 						let _rStatus = false;
-						if ( !_result || _result === 401 ) {
-							_rStatus = 401;
-							_result = null;
-						}
-						else
-						if ( _result === 403 ) {
-							_rStatus = 403;
-							_result = null;
+						if ( !_result || (typeof _result === 'number') ) {
+							_rStatus = (_result === 403) ? 403 : 401;
+							_result = {};
 						}
 						else
 						if ( __IS_OBJ(_result) ) {
@@ -298,16 +293,16 @@
 							
 							let _rBody = {};
 							if ( _rStatus === 401 ) {
-								_rBody.error = 401000;
-								_rBody.msg = "Authorization is required to access this api!";
+								_rBody.error = (_result.error|0)%1000 + 401000;
+								_rBody.msg = _result.msg || "Authorization is required to access this api!";
 							}
 							else {
-								_rBody.error = 403000;
-								_rBody.msg = "You're not authorized to access this api!";
+								_rBody.error = (_result.error|0)%1000 + 403000;
+								_rBody.msg = _result.msg || "You're not authorized to access this api!";
 							}
 							
-							if ( _result ) {
-								_rBody.detail = _result;
+							if ( _result.detail ) {
+								_rBody.detail = _result.detail;
 							}
 							
 							
