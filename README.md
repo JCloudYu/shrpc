@@ -72,6 +72,7 @@ The following table defines the standard error codes reserved for shrpc.
 | 403000 | The authorized information has insufficient privilege to invoke the procedure |
 | 404000 | The requested procedure is not available |
 | 500000 | Unexpected internal server error! If you catch this, that means you got problem with your code.... |
+| 500001 | The argument verification context provided is invalid |
 
 Please note that error codes locate within following interval are reserved for shrpc.
 > [ HTTP_STATUS_CODE * 100, HTTP_STATUS_CODE * 100 + 100 ]

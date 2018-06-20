@@ -144,7 +144,15 @@
 			listen:{
 				configurable:false, enumerable:true, writable:false,
 				value:(...args)=>{
-					return _server.listen(...args);
+					_server.listen(...args);
+					return _interface;
+				}
+			},
+			close:{
+				configurable:false, enumerable:true, writable:false,
+				value:(...args)=>{
+					_server.close(...args);
+					return _interface;
 				}
 			},
 			http:{
