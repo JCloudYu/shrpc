@@ -19,7 +19,13 @@
 	Object.defineProperties(SHRPC_HELPER, {
 		GenUserError: {
 			configurable:false, writable:false, enumerable:true,
-			value:(code, msg, detailInfo=null, status_code=400)=>{
+			value:(code, msg, detailInfo=null, status_code=null)=>{
+				if ( status_code === null ) {
+					status_code = (((code/100)%1000)|0);
+					if ( status_code <= 0 ) {
+						status_code = 400;
+					}
+				}
 				return {error:code, msg, detail:detailInfo, user_error:true, status_code};
 			}
 		},
