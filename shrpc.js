@@ -7,8 +7,9 @@
 (() => {
 	"use strict";
 	
-	const URL  = require( 'url' );
-	const http = require( 'http' );
+	const URL	= require( 'url' );
+	const http	= require( 'http' );
+	const beson	= require( 'beson' );
 	
 	
 	const ROOT_REQUIRE = (...args)=>{
@@ -41,10 +42,13 @@
 		}
 	});
 	
-	const SHRPC_FACTORY = (serverInst=null)=>{
+	const SHRPC_FACTORY = (serverInst=null, binarize=false)=>{
 		let _server = serverInst || http.createServer();
 		let _handlers = {};
 		let _interface = {};
+		const ACCEPT_MIME	= binarize ? 'application/x-beson' : 'application/json';
+		const SERIALIZER	= binarize ? __SERIALIZE_BESON : __SERIALIZE_JSON;
+		const DESERIALIZER	= binarize ? __DESERIALIZE_BESON : __DESERIALIZE_JSON;
 		
 		Object.defineProperties(_interface, {
 			initWith:{
@@ -183,11 +187,11 @@
 			})
 			// Parse post content according to request's http method and content-type
 			.then((handler)=>{
-				if ( handler && req.method === 'POST' && req.headers['content-type'] === 'application/json' ) {
+				if ( handler && req.method === 'POST' && req.headers['content-type'] === ACCEPT_MIME ) {
 					return __STREAM_READ_ALL(req).then((data)=>{
 						let args;
 						try {
-							args = JSON.parse(data.toString('utf8'));
+							args = DESERIALIZER(data);
 						}
 						catch(err) {
 							args = false;
@@ -214,13 +218,13 @@
 						error:404000,
 						msg: "Requested procedure is not defined!"
 					};
-					let rHeader = { 'Content-Type': 'application/json' };
+					let rHeader = { 'Content-Type': ACCEPT_MIME };
 					if ( _id ) {
 						rHeader[ 'X-Request-Id' ] = rBody._id = _id;
 					}
 					
 					res.writeHead(404, rHeader);
-					res.write(JSON.stringify(rBody));
+					res.write(SERIALIZER(rBody));
 					res.end();
 					return Promise.reject({trapped:true});
 				}
@@ -228,20 +232,20 @@
 			
 				// region [ Trap if input arg is not an object ]
 				// Check if the args var is an object
-				// Note that this check will be trapped only if the mime is application/json
+				// Note that this check will be trapped only if the mime is application/x-beson or application/json
 				if ( !__IS_OBJ(args) ) {
 					if ( res.finished ) return;
 					let rBody = {
 						error:400001,
 						msg: "The provided request payload is not a valid json object!"
 					};
-					let rHeader = { 'Content-Type': 'application/json' };
+					let rHeader = { 'Content-Type': ACCEPT_MIME };
 					if ( _id ) {
 						rHeader[ 'X-Request-Id' ] = rBody._id = _id;
 					}
 					
 					res.writeHead(400, rHeader);
-					res.write(JSON.stringify(rBody));
+					res.write(SERIALIZER(rBody));
 					res.end();
 					
 					return Promise.reject({trapped:true});
@@ -318,13 +322,13 @@
 							}
 							
 							
-							let _rHeader = { 'Content-Type': 'application/json' };
+							let _rHeader = { 'Content-Type': ACCEPT_MIME };
 							if ( _id ) {
 								_rHeader[ 'X-Request-Id' ] = _rBody._id = _id;
 							}
 							
 							res.writeHead(_rStatus, _rHeader);
-							res.write(JSON.stringify(_rBody));
+							res.write(SERIALIZER(_rBody));
 							res.end();
 							return Promise.reject({trapped:true});
 						}
@@ -349,7 +353,7 @@
 								error:400002,
 								msg: "The provided arguments are insufficient or invalid to invoke the procedure!"
 							};
-							let rHeader = { 'Content-Type': 'application/json' };
+							let rHeader = { 'Content-Type': ACCEPT_MIME };
 							if ( _id ) {
 								rHeader[ 'X-Request-Id' ] = rBody._id = _id;
 							}
@@ -358,7 +362,7 @@
 							
 							if ( result ) { rBody.detail = result; }
 							res.writeHead(400, rHeader);
-							res.write(JSON.stringify(rBody));
+							res.write(SERIALIZER(rBody));
 							res.end();
 							return Promise.reject({trapped:true});
 						});
@@ -405,13 +409,13 @@
 									msg: "The provided arguments are insufficient or invalid to invoke the procedure!",
 									detail: __errCollect
 								};
-								let rHeader = { 'Content-Type': 'application/json' };
+								let rHeader = { 'Content-Type': ACCEPT_MIME };
 								if ( _id ) {
 									rHeader[ 'X-Request-Id' ] = rBody._id = _id;
 								}
 								
 								res.writeHead(400, rHeader);
-								res.write(JSON.stringify(rBody));
+								res.write(SERIALIZER(rBody));
 								res.end();
 								return Promise.reject({trapped:true});
 							}
@@ -423,13 +427,13 @@
 							error:500001,
 							msg: "The verification context of this procedure is invalid!",
 						};
-						let rHeader = { 'Content-Type': 'application/json' };
+						let rHeader = { 'Content-Type': ACCEPT_MIME };
 						if ( _id ) {
 							rHeader[ 'X-Request-Id' ] = rBody._id = _id;
 						}
 						
 						res.writeHead(500, rHeader);
-						res.write(JSON.stringify(rBody));
+						res.write(SERIALIZER(rBody));
 						res.end();
 						return Promise.reject({trapped:true});
 					}
@@ -453,13 +457,13 @@
 					if ( res.finished ) return;
 					
 					let rBody = {ret};
-					let rHeader = { 'Content-Type': 'application/json' };
+					let rHeader = { 'Content-Type': ACCEPT_MIME };
 					if ( _id ) {
 						rHeader[ 'X-Request-Id' ] = rBody._id = _id;
 					}
 					
 					res.writeHead(200, rHeader);
-					res.write(JSON.stringify(rBody));
+					res.write(SERIALIZER(rBody));
 					res.end();
 				})
 				.catch((err)=>{
@@ -469,7 +473,7 @@
 					
 					
 					let rBody = {error:err.error, msg:err.msg};
-					let rHeader = { 'Content-Type': 'application/json' };
+					let rHeader = { 'Content-Type': ACCEPT_MIME };
 					if ( _id ) {
 						rHeader[ 'X-Request-Id' ] = rBody._id = _id;
 					}
@@ -478,7 +482,7 @@
 					let errCode = (err.status_code|0) % 1000;
 					errCode = ( errCode <= 600 && errCode <= 399 ) ? 400 : errCode;
 					res.writeHead( errCode, rHeader);
-					res.write(JSON.stringify(rBody));
+					res.write(SERIALIZER(rBody));
 					res.end();
 				});
 			})
@@ -498,13 +502,13 @@
 						rBody.detail = err.toString();
 					}
 					
-					let rHeader = { 'Content-Type': 'application/json' };
+					let rHeader = { 'Content-Type': ACCEPT_MIME };
 					if ( _id ) {
 						rHeader[ 'X-Request-Id' ] = rBody._id = _id;
 					}
 					
 					res.writeHead(500, rHeader);
-					res.write(JSON.stringify(rBody));
+					res.write(SERIALIZER(rBody));
 					res.end();
 				}
 				
@@ -525,6 +529,11 @@
 	});
 	
 	
+	function __SERIALIZE_BESON(data) { return Buffer.from(beson.Serialize(data)); }
+	function __DESERIALIZE_BESON(data) { return beson.Deserialize(data); }
+	
+	function __SERIALIZE_JSON(data) { return JSON.stringify(data); }
+	function __DESERIALIZE_JSON(data) { return JSON.parse(data.toString('utf8')) };
 	
 	function __STREAM_READ_ALL(stream, size_limit=0, doDrain=false) {
 		return new Promise((fulfill, reject)=>{
