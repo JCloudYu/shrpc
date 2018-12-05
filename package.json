@@ -1,6 +1,6 @@
 {
 	"name": "shrpc",
-	"version": "0.2.1",
+	"version": "0.2.2",
 	"description": "An alternative http-based jsonrpc interface which simplified the noisy usages",
 	"main": "shrpc.js",
 	"engines": {
@@ -25,6 +25,6 @@
 	},
 	"homepage": "https://github.com/JCloudYu/shrpc#readme",
 	"dependencies": {
-		"beson": "~0.9.14"
+		"beson": "~0.9.16"
 	}
 }
