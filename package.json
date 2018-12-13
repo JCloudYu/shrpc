@@ -1,6 +1,6 @@
 {
 	"name": "shrpc",
-	"version": "0.3.0",
+	"version": "0.9.0",
 	"description": "An alternative http-based jsonrpc interface which simplified the noisy usages",
 	"main": "shrpc.js",
 	"engines": {
