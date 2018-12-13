@@ -7,12 +7,56 @@
 (async()=>{
 	"use strict";
 	
+	try { require( 'beson' ); } catch(e) { console.error("beson module is required to run this test!"); process.exit(1); }
+	const {Serialize, Deserialize} = require('beson');
+	
+	
 	let {shrpc, helper} = require( './shrpc' );
-	let serverInst = shrpc(require( 'http' ).createServer(), true);
+	let serverInst = shrpc(require( 'http' ).createServer(), {
+		accept:[{mime:"application/x-beson", serializer:(input)=>{
+			return Buffer.from(Serialize(input));
+		}, deserializer:Deserialize}]
+	});
 	let specialClass;
 	
-	console.log( "Initializing class3 category" );
-	serverInst.handle( 'ns', 'class3', specialClass={
+	console.log( "Initializing categories" );
+	
+	serverInst
+	.expand( 'ns', 'class2', {
+		method2:(args, ctrl)=>{
+			return {
+				_id:ctrl._id,
+				a:1, b:2,
+				comment:"The lib will return everything you feed it!"
+			};
+		},
+		redir:(args, ctrl)=>{
+			let {request:req, response:res} = ctrl;
+			res.writeHead( 307, { "Location":`http://${req.headers[ 'host' ]}/ns/class2/method` });
+			res.end();
+		}
+	})
+	.handle( 'ns', {
+		_class: 'class1',
+		who:(args, ctrl)=>{
+			throw helper.GenUserError( 403000, "WHO ARE YOU!?", {
+				_sig:ctrl._sig,
+				_id:ctrl._id,
+			});
+		}
+	});
+	
+	
+	serverInst
+	.handle('ns', 'class1', specialClass={
+		who:(args, ctrl)=>{
+			return {
+				_sig:ctrl._sig,
+				_id:ctrl._id,
+				a:1, b:2,
+				comment:"The lib will return everything you feed it!"
+			};
+		},
 		argChkCall(args, ctrl){
 			return args;
 		},
@@ -25,7 +69,36 @@
 		authCheckDelay(args, ctrl) {
 			return args;
 		}
+	})
+	.expand( 'ns', {
+		_cate: 'class2',
+		error1:(args, ctrl)=>{
+			throw helper.GenUserError(
+				400012,
+				"This is meant to be failed!",
+				{_:"error1"}
+			);
+		},
+		error2:(args, ctrl)=>{
+			return Promise.reject(helper.GenUserError(
+				400012,
+				"This is meant to be failed!",
+				{_:"error2"}
+			));
+		},
+		error3:(args, ctrl)=>{
+			JSON.parse('//');
+		},
+		error4:(args, ctrl)=>{
+			throw helper.GenUserError(
+				401001,
+				"You're not authorized!",
+				{"_!!":"Invalid authorization info!"},
+				401
+			);
+		}
 	});
+	
 	specialClass.argChkCall.verify = {
 		"a": true,
 		"b": [ "1", "2", "3" ],

@@ -1,10 +1,10 @@
 {
 	"name": "shrpc",
-	"version": "0.2.2",
+	"version": "0.3.0",
 	"description": "An alternative http-based jsonrpc interface which simplified the noisy usages",
 	"main": "shrpc.js",
 	"engines": {
-		"node": ">=8"
+		"node": ">=10"
 	},
 	"scripts": {
 		"test": "node test.js"
@@ -19,12 +19,10 @@
 		"SHRPC"
 	],
 	"author": "JCloudYu",
-	"license": "WTFPL",
+	"license": "ISC",
 	"bugs": {
 		"url": "https://github.com/JCloudYu/shrpc/issues"
 	},
 	"homepage": "https://github.com/JCloudYu/shrpc#readme",
-	"dependencies": {
-		"beson": "~0.9.16"
-	}
+	"dependencies": {}
 }

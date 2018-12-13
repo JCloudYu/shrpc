@@ -16,9 +16,9 @@
 			method:(args, ctrl)=>{
 				return "OOPS CLASS1!";
 			},
-			_cate: 'class1'
+			_cate: 'class3'
 		})
-		.handle( 'ns', 'class2', {
+		.handle( 'ns', 'class4', {
 			method:(args, ctrl)=>{
 				return {
 					_sig:ctrl._sig,
@@ -29,7 +29,7 @@
 			}
 		})
 		.expand( 'ns', {
-			_cate: 'class2',
+			_cate: 'class4',
 			method2:(args, ctrl)=>{
 				return {
 					_id:ctrl._id,
@@ -40,7 +40,7 @@
 			},
 			redir:(args, ctrl)=>{
 				let {request:req, response:res} = ctrl;
-				res.writeHead( 307, { "Location":`http://${req.headers[ 'host' ]}/ns/class2/method` });
+				res.writeHead( 307, { "Location":`http://${req.headers[ 'host' ]}/ns/class4/method` });
 				res.end();
 			},
 			error1:(args, ctrl)=>{

@@ -54,7 +54,7 @@ The response payload is a json object contains following fields.
 | field  | occurrence | default | comment |
 |:------:|:----------:|:-------------:|:--------|
 | \_id   | all		  | null          | The value same as \_id provided by caller in procedure descriptor |
-| ret    | success    | null          | The result of the invocation |
+| ret    | success    | @any \| undefined          | The result of the invocation. <br> The absence of this field means the function returns nothing  |
 | error	 | error      | 0             | The detailed error code used to identify exact error conditions |
 | msg	 | error	  | ""  | The human readable error message |
 

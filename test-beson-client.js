@@ -6,7 +6,8 @@
 	"use strict";
 	
 	const http = require( 'http' );
-	const beson = require( 'beson' );
+	try { require( 'beson' ); } catch(e) { console.error("beson module is required to run this test!"); process.exit(1); }
+	const beson = require('beson');
 	const {UInt64} = beson;
 	
 	let postData = beson.Serialize({
@@ -17,7 +18,7 @@
 	
 	let chunks = [];
 	let request = http.request(
-		'http://localhost:8880/ns/class3/argChkCall',
+		'http://localhost:8880/ns/class1/argChkCall',
 		{
 			method:'POST',
 			headers:{

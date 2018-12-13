@@ -16,7 +16,7 @@
 			process.stdout.write( "    Starting async loader..." );
 			setTimeout(()=>{
 				inst.expand( 'ns', {
-					_cate: 'class2',
+					_cate: 'class3',
 					method2:(args, ctrl)=>{
 						return {
 							_id:ctrl._id,
@@ -26,7 +26,7 @@
 					},
 					redir:(args, ctrl)=>{
 						let {request:req, response:res} = ctrl;
-						res.writeHead( 307, { "Location":`http://${req.headers[ 'host' ]}/ns/class2/method` });
+						res.writeHead( 307, { "Location":`http://${req.headers[ 'host' ]}/ns/class3/method` });
 						res.end();
 					},
 					error1:(args, ctrl)=>{
