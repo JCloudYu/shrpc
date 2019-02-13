@@ -17,6 +17,7 @@
 	
 	
 	const DEFAULT_ERROR = {
+		UNACCEPTABLE_MIME: 'UNACCEPTABLE_MIME',
 		UNSUPPORTED_PROCEDURE:'UNSUPPORTED_PROCEDURE',
 		INVALID_ARGUMENT:'INVALID_ARGUMENT',
 		UNACCEPTABLE_ARGUMENT:'UNACCEPTABLE_ARGUMENT',
@@ -24,6 +25,10 @@
 		UNEXPECTED_INTERNAL_ERROR: 'UNEXPECTED_INTERNAL_ERROR'
 	};
 	const DEFAULT_ERROR_BODY = {
+		UNACCEPTABLE_MIME: {
+			code: 415000,
+			message: "Request mime type is not accepted!"
+		},
 		UNSUPPORTED_PROCEDURE: {
 			code: 404000,
 			message: "Requested procedure is not supported!"
@@ -229,6 +234,17 @@
 			
 			
 			const MIME_PROCESSOR = ACCEPTED_REQ_TYPES[req.headers['content-type']];
+			if ( !MIME_PROCESSOR ) {
+				return __BUILD_DEFAULT_ERROR_RESPONSE(
+					res, __SERIALIZE_JSON,
+					DEFAULT_ERROR.UNACCEPTABLE_MIME,
+					'application/json',
+					{ requested_mime: req.headers['content-type'] }
+				);
+			}
+			
+			
+			
 			const {
 				mime:ACCEPTED_MIME,
 				serializer:SERIALIZER,
