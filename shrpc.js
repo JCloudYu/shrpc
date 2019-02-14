@@ -71,6 +71,11 @@
 		}
 	};
 	
+	const JSON_MIME_PROCESSOR = {
+		mime:"application/json",
+		serializer:__SERIALIZE_JSON,
+		deserializer:__DESERIALIZE_JSON
+	};
 	const SHRPC_FACTORY = (serverInst=null, options={accept:[], preprocessor:null})=>{
 		let _server = serverInst || http.createServer();
 		let _handlers = {};
@@ -206,11 +211,7 @@
 			}
 			
 			if ( accept.length === 0 ) {
-				accept.push({
-					mime:"application/json",
-					serializer:__SERIALIZE_JSON,
-					deserializer:__DESERIALIZE_JSON
-				});
+				accept.push(JSON_MIME_PROCESSOR);
 			}
 			
 			for(let i=0; i<accept.length; i++) {
@@ -226,6 +227,7 @@
 		
 		
 		const REQUEST_PREPROCESSOR = (typeof options.preprocessor === "function") ? options.preprocessor : __DEFAULT_REQUEST_PREPROCESSOR;
+		const DEFAULT_MIME_PROCSSOR = ACCEPTED_REQ_TYPES[options.default_mime];
 		_server.on('request', async(req, res)=>{
 			let should_continue = await REQUEST_PREPROCESSOR(req, res);
 			if ( !should_continue ) { return; }
@@ -241,8 +243,8 @@
 			
 			
 			
-			const MIME_PROCESSOR = ACCEPTED_REQ_TYPES[req.headers['content-type']];
-			if ( !MIME_PROCESSOR ) {
+			let _MIME_PROCESSOR = ACCEPTED_REQ_TYPES[req.headers['content-type']] || DEFAULT_MIME_PROCSSOR;
+			if ( !_MIME_PROCESSOR ) {
 				return __BUILD_DEFAULT_ERROR_RESPONSE(
 					res, __SERIALIZE_JSON,
 					DEFAULT_ERROR.UNACCEPTABLE_MIME,
@@ -250,6 +252,7 @@
 					{ requested_mime: req.headers['content-type'] }
 				);
 			}
+			const MIME_PROCESSOR = _MIME_PROCESSOR;
 			
 			
 			
