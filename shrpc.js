@@ -76,7 +76,7 @@
 		serializer:__SERIALIZE_JSON,
 		deserializer:__DESERIALIZE_JSON
 	};
-	const SHRPC_FACTORY = (serverInst=null, options={accept:[], preprocessor:null})=>{
+	const SHRPC_FACTORY = (serverInst=null, options={accept:[], preprocessor:null, default_mime:null})=>{
 		let _server = serverInst || http.createServer();
 		let _handlers = {};
 		let _interface = {};
