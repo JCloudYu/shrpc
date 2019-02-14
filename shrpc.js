@@ -71,7 +71,7 @@
 		}
 	};
 	
-	const SHRPC_FACTORY = (serverInst=null, options={accept:[]})=>{
+	const SHRPC_FACTORY = (serverInst=null, options={accept:[], preprocessor:null})=>{
 		let _server = serverInst || http.createServer();
 		let _handlers = {};
 		let _interface = {};
@@ -225,8 +225,16 @@
 		}
 		
 		
-		
+		const REQUEST_PREPROCESSOR = (typeof options.preprocessor === "function") ? options.preprocessor : __DEFAULT_REQUEST_PREPROCESSOR;
 		_server.on('request', async(req, res)=>{
+			let should_continue = await REQUEST_PREPROCESSOR(req, res);
+			if ( !should_continue ) { return; }
+			
+			
+			
+			
+			
+			
 			// Parse incoming url and extract _id field from query part
 			const {pathname:path='/', query={}} = URL.parse(req.url, true);
 			const {REQ_ID = null} = query;
@@ -468,7 +476,7 @@
 	
 	
 	
-	
+	function __DEFAULT_REQUEST_PREPROCESSOR(req, res){ return true; }
 	function __SERIALIZE_JSON(data) { return JSON.stringify(data); }
 	function __DESERIALIZE_JSON(data) { return JSON.parse(data.toString('utf8')) }
 	function __BUILD_DEFAULT_ERROR_RESPONSE(stream, serializer, error_code, mime, error_detail=null, req_id=null) {
